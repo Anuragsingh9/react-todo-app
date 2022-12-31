@@ -88,3 +88,6 @@
 .line-throughh{
     text-decoration: line-through;
 }
+.invalidForm{
+    border:2px solid red !important;
+}

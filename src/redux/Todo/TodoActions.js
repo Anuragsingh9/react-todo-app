@@ -1,4 +1,4 @@
-import { ADD_TODO, UPDATE_CHECKBOX,GET_TODO } from "./TodoTypes";
+import { ADD_TODO, UPDATE_CHECKBOX, GET_SINGLE_TODO, HANDLE_POP_UP, CURRENT_TODO_DATA } from "./TodoTypes";
 
 export const addTodo = (data) => {
     return {
@@ -16,7 +16,20 @@ export const updateCheckBox = data => {
 
 export const getTodo = data => {
     return {
-        type: GET_TODO,
+        type: GET_SINGLE_TODO,
+        payload: data
+    }
+}
+
+export const handlePopUp = data => {
+    return {
+        type: HANDLE_POP_UP,
+        payload: data
+    }
+}
+export const currentTodoData = data => {
+    return {
+        type: CURRENT_TODO_DATA,
         payload: data
     }
 }

@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiFillDelete } from "react-icons/bs";
 import { FaTrash, FaEdit } from 'react-icons/fa';
-import { addTodo, updateCheckBox } from '../../redux/Todo/TodoActions';
+import { addTodo, updateCheckBox, handlePopUp, getTodo,currentTodoData } from '../../redux/Todo/TodoActions';
 import { connect } from 'react-redux';
 const Item = (props) => {
 
     console.log('redux-todo', props.todo_list);
+    const [currentTodo, setCurrentTodo] = useState("");
+    const [currentTodoData, setCurrentTodoData] = useState({});
 
     const markCompleted = (id) => {
         const singleTodo = props.todo_list.filter((data) => {
@@ -15,13 +17,25 @@ const Item = (props) => {
         singleTodo[0].isCompleted = !singleTodo[0].isCompleted;
         console.log('after', singleTodo);
         props.updateCheckBox(singleTodo);
-        // console.log(singleTodo[0].title);
     }
 
     useEffect(() => {
+        console.log('single dataaa',currentTodoData)
+    }, [currentTodoData]);
 
-    }, []);
+    const openPopUp = (id) => {
+        props.handlePopUp(true);
+        const singleTodo = findTodo(id,props.todo_list);
+        console.log('singl data',singleTodo[0]);
+        props.currentTodo(singleTodo);
+        setCurrentTodoData(singleTodo[0])
+    }
 
+    const findTodo = (id, allTodo) => {
+        return allTodo.filter((current) => {
+            return current.id == id;
+        });
+    }
 
     return (
         <>
@@ -37,7 +51,7 @@ const Item = (props) => {
                 </div>
                 <div className='item right-item'>
                     <div className='trash-btn'>{<FaTrash />}</div>
-                    <div className='edit-btn'>{<FaEdit />}</div>
+                    <div className='edit-btn' onClick={() => openPopUp(props.todoData.id)}>{<FaEdit />}</div>
                 </div>
             </div>
         </>
@@ -46,15 +60,19 @@ const Item = (props) => {
 
 const mapStateToProps = state => {
     return {
-        todo_list: state.todo_list
+        todo_list: state.todo_list,
+        is_pop_up_open: state.handle_pop,
+        single_todo_data: state.single_todo
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        updateCheckBox: (data) => dispatch(updateCheckBox(data))
+        updateCheckBox: (data) => dispatch(updateCheckBox(data)),
+        handlePopUp: (data) => dispatch(handlePopUp(data)),
+        getTodo: (data) => dispatch(getTodo(data)),
+        currentTodo: (data) => dispatch(currentTodoData(data)),
     }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Item);
-// export default Item;

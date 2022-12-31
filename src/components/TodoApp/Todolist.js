@@ -4,17 +4,21 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { connect } from 'react-redux';
-import { addTodo } from '../../redux/Todo/TodoActions';
+import { addTodo, handlePopUp } from '../../redux/Todo/TodoActions';
 
 const OPTIONS = { all: 'All', completed: 'Completed', incomplete: 'Incomplete' }
 
 const Todolist = (props) => {
+
+    console.log('current t',props.current_todo);
 
     const [show, setShow] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const [options, setOptions] = useState("incomplete");
     const [title, setTitle] = useState("");
     const [selectedDropdown, setSelectedDropdown] = useState("all");
+    const [invalidForm, setInvalidForm] = useState(false);
+    const [currentTodoData, setCurrentTodoData] = useState({});
 
     function makeid(length) {
         var result = '';
@@ -26,30 +30,48 @@ const Todolist = (props) => {
         return result;
     }
 
+    useEffect(() => {
+        if(props.current_todo){
+            setTitle(props.current_todo.title)
+        }
+    },[props.current_todo,title])
+
     const handleClose = () => {
-        const date = new Date();
-        console.log(isCompleted);
-        const id = makeid(5);
-        const newTodo = {
-            id: id,
-            title: title,
-            date: date.toLocaleDateString(),
-            isCompleted: isCompleted
+        if (title === undefined || title === "") {
+            setInvalidForm(true);
+            return;
+        } else {
+            setInvalidForm(false);
+            const date = new Date();
+            console.log(isCompleted);
+            const id = makeid(5);
+            const newTodo = {
+                id: id,
+                title: title,
+                date: date.toLocaleDateString(),
+                isCompleted: isCompleted
+            }
+            props.addTodo(newTodo);
+            props.handlePopUp(false)
+            setTitle("");
         }
 
-        console.log('newData', newTodo);
-
-        props.addTodo(newTodo);
-
-        setShow(false);
     };
 
+    const closeForm = () => {
+        props.handlePopUp(false)
+    }
+
     const handleShow = () => {
-        setShow(true);
+        setInvalidForm(false);
+        props.handlePopUp(true);
     };
 
     const handleTitleChange = (event) => {
-        setTitle(event.target.value);
+        if (event.target.value !== "") {
+            setInvalidForm(false);
+            setTitle(event.target.value);
+        }
     }
 
     const handleOptoinChange = (event) => {
@@ -76,13 +98,13 @@ const Todolist = (props) => {
                         Add Task
                     </Button>
 
-                    <Modal show={show} onHide={handleClose}>
+                    <Modal show={props.is_pop_up_open} onHide={handleClose}>
                         <Modal.Header closeButton>
                             <Modal.Title>Add TODO</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <label className='label'>Title</label>
-                            <div className=' form-control input-box'>
+                            <div className={invalidForm ? 'form-control input-box invalidForm' : 'form-control input-box'}>
                                 <input type="text" value={title} onChange={handleTitleChange} placeholder="Add task title" />
                             </div>
                             <label className='label'>Status</label>
@@ -101,7 +123,7 @@ const Todolist = (props) => {
                             <Button variant="primary add-task-btn" onClick={handleClose}>
                                 Add Task
                             </Button>
-                            <Button variant="secondary" onClick={handleClose}>
+                            <Button variant="secondary" onClick={closeForm}>
                                 Cancel
                             </Button>
                         </Modal.Footer>
@@ -127,12 +149,16 @@ const Todolist = (props) => {
 }
 
 const mapStateToProps = (state) => {
-
+    return {
+        is_pop_up_open: state.handle_pop,
+        current_todo: state.current_todo
+    }
 }
 
 const mapDispacthToProps = (dispatch) => {
     return {
-        addTodo: data => dispatch(addTodo(data))
+        addTodo: data => dispatch(addTodo(data)),
+        handlePopUp: (data) => dispatch(handlePopUp(data)),
     }
 }
 
