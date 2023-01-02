@@ -1,5 +1,5 @@
 import { getTodo } from "./TodoActions";
-import { ADD_TODO, HANDLE_POP_UP, UPDATE_CHECKBOX, GET_SINGLE_TODO, CURRENT_TODO_DATA } from "./TodoTypes";
+import { ADD_TODO, HANDLE_POP_UP, UPDATE_CHECKBOX, GET_SINGLE_TODO, CURRENT_TODO_DATA, UPDATE_TODO, DELETE_TODO } from "./TodoTypes";
 
 const initialState = {
     todo_list: [
@@ -34,6 +34,19 @@ const todoReducer = (state = initialState, action) => {
                 ...state,
                 todo_list: data
             }
+        case UPDATE_TODO:
+            let todo_data = updateTodo(state, action.payload);
+            return {
+                ...state,
+                todo_list: todo_data
+            }
+        case DELETE_TODO:
+            let delete_data = deleteTodo(state, action.payload);
+            console.log('curr after delete', delete_data)
+            return {
+                ...state,
+                todo_list: delete_data
+            }
         case HANDLE_POP_UP:
             return {
                 ...state,
@@ -58,14 +71,21 @@ const todoReducer = (state = initialState, action) => {
 
 const updateTodo = (state, payload) => {
     return state.todo_list.map((current) => {
-        if (current.id == payload[0].id) {
+        if (current.id == payload.id) {
             return {
                 ...current,
-                ...payload[0],
+                ...payload,
             }
         } else {
             return current;
         }
+    });
+}
+
+const deleteTodo = (state, payload) => {
+    console.log('curr delete item', payload)
+    return state.todo_list.filter((current) => {
+        return current.id != payload;
     });
 }
 

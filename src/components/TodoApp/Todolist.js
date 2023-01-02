@@ -4,13 +4,16 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { connect } from 'react-redux';
-import { addTodo, handlePopUp } from '../../redux/Todo/TodoActions';
+import { addTodo, handlePopUp, updatedTodo } from '../../redux/Todo/TodoActions';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const OPTIONS = { all: 'All', completed: 'Completed', incomplete: 'Incomplete' }
 
 const Todolist = (props) => {
 
-    console.log('current t',props.current_todo);
+
+    const STATUS = { true: 'completed', false: 'incomplete' };
 
     const [show, setShow] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
@@ -19,6 +22,33 @@ const Todolist = (props) => {
     const [selectedDropdown, setSelectedDropdown] = useState("all");
     const [invalidForm, setInvalidForm] = useState(false);
     const [currentTodoData, setCurrentTodoData] = useState({});
+    const [isUpdateMode, setIsUpdateMode] = useState(false);
+
+    const showNotification = (type, msg) => {
+        switch (type) {
+            case 'success':
+                return toast.success(msg, {
+                    position: "top-center",
+                    theme: "dark",
+                    autoClose: 2000,
+                    hideProgressBar: true
+                });
+            case 'error':
+                return toast.error(msg, {
+                    position: "top-center",
+                    theme: "dark",
+                    autoClose: 2000,
+                    hideProgressBar: true
+                });
+            default:
+                toast.success("Success!!", {
+                    position: "top-center",
+                    theme: "dark",
+                    autoClose: 2000,
+                    hideProgressBar: true
+                });
+        }
+    }
 
     function makeid(length) {
         var result = '';
@@ -31,28 +61,47 @@ const Todolist = (props) => {
     }
 
     useEffect(() => {
-        if(props.current_todo){
-            setTitle(props.current_todo.title)
+        if (props.current_todo && props.current_todo !== undefined) {
+            setIsUpdateMode(true);
+            setTitle(props.current_todo[0].title);
+            setOptions(STATUS[props.current_todo[0].isCompleted]);
+        } else {
+            setIsUpdateMode(false);
+            setTitle("");
         }
-    },[props.current_todo,title])
+    }, [props.current_todo])
 
     const handleClose = () => {
         if (title === undefined || title === "") {
             setInvalidForm(true);
+            showNotification('error', 'Please enter the title');
             return;
         } else {
+            setIsUpdateMode(false);
             setInvalidForm(false);
             const date = new Date();
             console.log(isCompleted);
             const id = makeid(5);
-            const newTodo = {
-                id: id,
-                title: title,
-                date: date.toLocaleDateString(),
-                isCompleted: isCompleted
+            if (isUpdateMode) {
+                const newTodo = {
+                    id: props.current_todo[0].id,
+                    title: title,
+                    date: date.toLocaleDateString(),
+                    isCompleted: options
+                }
+                props.updatedTodo(newTodo);
+                showNotification('success', 'Todo updated successfully');
+            } else {
+                const newTodo = {
+                    id: id,
+                    title: title,
+                    date: date.toLocaleDateString(),
+                    isCompleted: isCompleted
+                }
+                props.addTodo(newTodo);
+                showNotification('success', 'Todo added successfully')
             }
-            props.addTodo(newTodo);
-            props.handlePopUp(false)
+            props.handlePopUp(false);
             setTitle("");
         }
 
@@ -65,6 +114,7 @@ const Todolist = (props) => {
     const handleShow = () => {
         setInvalidForm(false);
         props.handlePopUp(true);
+        setIsUpdateMode(false)
     };
 
     const handleTitleChange = (event) => {
@@ -83,9 +133,9 @@ const Todolist = (props) => {
         setSelectedDropdown(value)
     }
 
-    useEffect(() => {
+    // useEffect(() => {
 
-    }, [selectedDropdown]);
+    // }, [selectedDropdown]);
 
     return (<>
         <div className='todo-title'>
@@ -95,7 +145,7 @@ const Todolist = (props) => {
             <div className='header-part'>
                 <>
                     <Button variant="primary add-task-btn" onClick={handleShow}>
-                        Add Task
+                        {isUpdateMode ? "Update Task" : "Add Task"}
                     </Button>
 
                     <Modal show={props.is_pop_up_open} onHide={handleClose}>
@@ -121,7 +171,7 @@ const Todolist = (props) => {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="primary add-task-btn" onClick={handleClose}>
-                                Add Task
+                                {isUpdateMode ? "Update Task" : "Add Task"}
                             </Button>
                             <Button variant="secondary" onClick={closeForm}>
                                 Cancel
@@ -144,6 +194,7 @@ const Todolist = (props) => {
                 </Dropdown>
             </div>
         </div>
+        <ToastContainer />
     </>
     );
 }
@@ -151,7 +202,8 @@ const Todolist = (props) => {
 const mapStateToProps = (state) => {
     return {
         is_pop_up_open: state.handle_pop,
-        current_todo: state.current_todo
+        current_todo: state.current_todo,
+        todo_list: state.todo_list,
     }
 }
 
@@ -159,6 +211,7 @@ const mapDispacthToProps = (dispatch) => {
     return {
         addTodo: data => dispatch(addTodo(data)),
         handlePopUp: (data) => dispatch(handlePopUp(data)),
+        updatedTodo: (data) => dispatch(updatedTodo(data)),
     }
 }
 

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { AiFillDelete } from "react-icons/bs";
 import { FaTrash, FaEdit } from 'react-icons/fa';
-import { addTodo, updateCheckBox, handlePopUp, getTodo,currentTodoData } from '../../redux/Todo/TodoActions';
+import { addTodo, updateCheckBox, handlePopUp, getTodo, currentTodoData, deleteTodo } from '../../redux/Todo/TodoActions';
 import { connect } from 'react-redux';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Item = (props) => {
 
     console.log('redux-todo', props.todo_list);
@@ -20,15 +22,27 @@ const Item = (props) => {
     }
 
     useEffect(() => {
-        console.log('single dataaa',currentTodoData)
+        console.log('single dataaa', currentTodoData)
     }, [currentTodoData]);
 
     const openPopUp = (id) => {
         props.handlePopUp(true);
-        const singleTodo = findTodo(id,props.todo_list);
-        console.log('singl data',singleTodo[0]);
+        const singleTodo = findTodo(id, props.todo_list);
+        console.log('singl data', singleTodo[0]);
         props.currentTodo(singleTodo);
         setCurrentTodoData(singleTodo[0])
+    }
+
+    const deleteTodo = (id) => {
+        if (window.confirm("Are you sure you want to delete?")) {
+            props.deleteTodo(id);
+            toast.success("Deleted Successfully!",{
+                position: "top-center",
+                theme: "dark",
+                autoClose: 2000,
+                hideProgressBar:true
+            });
+        }
     }
 
     const findTodo = (id, allTodo) => {
@@ -50,10 +64,11 @@ const Item = (props) => {
                     </div>
                 </div>
                 <div className='item right-item'>
-                    <div className='trash-btn'>{<FaTrash />}</div>
+                    <div className='trash-btn' onClick={() => deleteTodo(props.todoData.id)}>{<FaTrash />}</div>
                     <div className='edit-btn' onClick={() => openPopUp(props.todoData.id)}>{<FaEdit />}</div>
                 </div>
             </div>
+            <ToastContainer />
         </>
     );
 }
@@ -72,6 +87,7 @@ const mapDispatchToProps = dispatch => {
         handlePopUp: (data) => dispatch(handlePopUp(data)),
         getTodo: (data) => dispatch(getTodo(data)),
         currentTodo: (data) => dispatch(currentTodoData(data)),
+        deleteTodo: (data) => dispatch(deleteTodo(data)),
     }
 }
 

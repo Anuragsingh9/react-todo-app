@@ -4,3 +4,5 @@ export const GET_TODO = 'GET_TODO';
 export const HANDLE_POP_UP = 'HANDLE_POP_UP';
 export const GET_SINGLE_TODO = 'GET_SINGLE_TODO';
 export const CURRENT_TODO_DATA = 'CURRENT_TODO_DATA';
+export const UPDATE_TODO = 'UPDATE_TODO';
+export const DELETE_TODO = 'DELETE_TODO';
